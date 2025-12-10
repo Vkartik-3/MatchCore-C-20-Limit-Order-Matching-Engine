@@ -1,4 +1,4 @@
-# QuantumMatch Order Book Engine
+# MatchCore Order Book Engine
 
 > A high-performance, production-grade Limit Order Book (LOB) implementation in modern C++20, designed to understand and replicate the core matching engine that powers financial exchanges worldwide.
 
@@ -10,7 +10,7 @@
 
 ## Table of Contents
 
-- [What is QuantumMatch?](#what-is-quantummatch)
+- [What is MatchCore?](#what-is-matchcore)
 - [What It Does](#what-it-does)
 - [What We Built](#what-we-built)
 - [Why We Created This Project](#why-we-created-this-project)
@@ -28,9 +28,9 @@
 
 ---
 
-## What is QuantumMatch?
+## What is MatchCore?
 
-**QuantumMatch** is a fully functional limit order book engine that implements the core data structure and matching logic used by modern financial exchanges (like NYSE, NASDAQ, CME). It maintains buy and sell orders, executes trades when prices cross, and ensures fair order priority using **Price-Time Priority** (FIFO within each price level).
+**MatchCore** is a fully functional limit order book engine that implements the core data structure and matching logic used by modern financial exchanges (like NYSE, NASDAQ, CME). It maintains buy and sell orders, executes trades when prices cross, and ensures fair order priority using **Price-Time Priority** (FIFO within each price level).
 
 This is the fundamental technology that powers:
 - Stock exchanges
@@ -42,7 +42,7 @@ This is the fundamental technology that powers:
 
 ## What It Does
 
-QuantumMatch provides a complete order management and execution system with the following capabilities:
+MatchCore provides a complete order management and execution system with the following capabilities:
 
 ### Core Functionality
 - **Order Submission**: Accept and manage incoming buy/sell orders
@@ -130,7 +130,7 @@ Most open-source order book implementations are either:
 - Too complex (production HFT engines with custom allocators)
 - Language-specific (Python/Java with poor C++ examples)
 
-**QuantumMatch bridges this gap**: It's complex enough to be realistic but simple enough to understand.
+**MatchCore bridges this gap**: It's complex enough to be realistic but simple enough to understand.
 
 ---
 
@@ -180,7 +180,7 @@ Most open-source order book implementations are either:
 ## How It's Different From Other Order Books
 
 ### Compared to Academic Implementations
-| Feature | QuantumMatch | Academic Examples |
+| Feature | MatchCore | Academic Examples |
 |---------|--------------|-------------------|
 | Order Types | 5 types (GTC, IOC, FOK, DAY, MARKET) | Usually just GTC |
 | Thread Safety | Full mutex protection | Often single-threaded |
@@ -188,7 +188,7 @@ Most open-source order book implementations are either:
 | Production Features | Cancel-replace, partial fills, metrics | Basic add/cancel |
 
 ### Compared to Production Systems (e.g., NASDAQ, CME)
-| Feature | QuantumMatch | Production Exchanges |
+| Feature | MatchCore | Production Exchanges |
 |---------|--------------|---------------------|
 | Latency | Microsecond scale (STL containers) | Nanosecond scale (custom allocators) |
 | Order Types | 5 core types | 20+ types (iceberg, stop-loss, etc.) |
@@ -197,7 +197,7 @@ Most open-source order book implementations are either:
 | Risk Controls | None | Pre-trade risk checks, circuit breakers |
 | Persistence | In-memory only | Durable storage, replication |
 
-### Unique Advantages of QuantumMatch
+### Unique Advantages of MatchCore
 
 1. **Readability Over Performance**: Code is structured for learning, not nanosecond optimization
    - Clear variable names and separation of concerns
@@ -346,7 +346,7 @@ Main Thread (Order Operations)              Background Thread (Expiry)
 
 ## Trading Platform Integration
 
-QuantumMatch is designed to be integrated into larger trading systems. Here's how it can connect to real trading platforms:
+MatchCore is designed to be integrated into larger trading systems. Here's how it can connect to real trading platforms:
 
 ### Integration Architecture
 
@@ -359,7 +359,7 @@ QuantumMatch is designed to be integrated into larger trading systems. Here's ho
 │  │              Order Gateway (FIX Protocol)            │  │
 │  │  - Receives orders from clients (FIX 4.2/4.4/5.0)    │  │
 │  │  - Validates message format                          │  │
-│  │  - Converts FIX → QuantumMatch OrderEntry            │  │
+│  │  - Converts FIX → MatchCore OrderEntry               │  │
 │  └────────────────────┬─────────────────────────────────┘  │
 │                       ↓                                     │
 │  ┌──────────────────────────────────────────────────────┐  │
@@ -370,7 +370,7 @@ QuantumMatch is designed to be integrated into larger trading systems. Here's ho
 │  └────────────────────┬─────────────────────────────────┘  │
 │                       ↓                                     │
 │  ┌──────────────────────────────────────────────────────┐  │
-│  │           QuantumMatch Order Book Engine             │  │
+│  │           MatchCore Order Book Engine                │  │
 │  │  - submitOrder() / cancelOrder() / modifyOrder()     │  │
 │  │  - Returns Executions vector                         │  │
 │  └────────────────────┬─────────────────────────────────┘  │
@@ -396,7 +396,7 @@ QuantumMatch is designed to be integrated into larger trading systems. Here's ho
 
 #### 1. **FIX Protocol Adapter**
 ```cpp
-// Convert FIX NewOrderSingle (MsgType=D) to QuantumMatch order
+// Convert FIX NewOrderSingle (MsgType=D) to MatchCore order
 OrderPtr convertFIXtoOrder(const FIX44::NewOrderSingle& msg) {
     OrderId orderId = std::stoull(msg.getField(FIX::FIELD::ClOrdID));
     Side side = (msg.getField(FIX::FIELD::Side) == "1") ? Side::BUY : Side::SELL;
@@ -476,11 +476,11 @@ class OrderBookHandler : public EWrapper {
 
 #### **Cryptocurrency Exchange (Binance/Coinbase) Bridge**
 ```cpp
-// Poll exchange order book and sync with QuantumMatch
+// Poll exchange order book and sync with MatchCore
 void syncExchangeOrderBook(const std::string& symbol) {
     auto externalDepth = binanceAPI.getOrderBook(symbol);
 
-    // Clear and rebuild QuantumMatch book
+    // Clear and rebuild MatchCore book
     for (const auto& [price, qty] : externalDepth.bids) {
         // Submit synthetic orders to match external state
     }
@@ -493,7 +493,7 @@ void syncExchangeOrderBook(const std::string& symbol) {
 web3.eth.subscribe('logs', { address: contractAddress })
     .on('data', (log) => {
         // Parse OrderPlaced event
-        // Submit to QuantumMatch engine
+        // Submit to MatchCore engine
     });
 ```
 
@@ -529,7 +529,7 @@ service OrderBookService {
 ### Performance Considerations for Production
 
 1. **Latency Optimization**
-   - Bypass QuantumMatch mutexes with lock-free queues (SPSC ring buffer)
+   - Bypass MatchCore mutexes with lock-free queues (SPSC ring buffer)
    - Pre-allocate order objects in memory pools
    - Pin threads to CPU cores
 
@@ -539,7 +539,7 @@ service OrderBookService {
    - Snapshot order book state periodically
 
 3. **Horizontal Scaling**
-   - Shard by instrument (one QuantumMatch instance per symbol)
+   - Shard by instrument (one MatchCore instance per symbol)
    - Run separate matching engines for different asset classes
 
 ---
@@ -559,8 +559,8 @@ service OrderBookService {
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/quantummatch.git
-cd quantummatch
+git clone https://github.com/yourusername/matchcore.git
+cd matchcore
 
 # Create build directory
 mkdir build && cd build
@@ -610,7 +610,7 @@ cmake .. -DWARNINGS_AS_ERRORS=ON
 cmake .. -G Ninja
 
 # Install to custom location
-cmake .. -DCMAKE_INSTALL_PREFIX=/opt/quantummatch
+cmake .. -DCMAKE_INSTALL_PREFIX=/opt/matchcore
 cmake --build . --target install
 ```
 
@@ -932,7 +932,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ```
 MIT License
 
-Copyright (c) 2024 QuantumMatch Contributors
+Copyright (c) 2024 MatchCore Contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -944,44 +944,10 @@ furnished to do so, subject to the following conditions:
 [Standard MIT License text...]
 ```
 
----
 
-## Acknowledgments
-
-This project was built to understand the inner workings of financial exchanges. Special thanks to:
-
-- **Market Microstructure Theory** literature (Maureen O'Hara, Larry Harris)
-- **Trading and Exchanges** by Larry Harris
-- The C++ community for modern STL design
-- Open-source matching engine implementations that inspired this work
-
----
-
-## Contact & Support
-
-- **GitHub Issues**: [Report bugs or request features](https://github.com/yourusername/quantummatch/issues)
-- **Discussions**: [Ask questions or share ideas](https://github.com/yourusername/quantummatch/discussions)
-
----
-
-## Disclaimer
-
-**QuantumMatch is an educational project and should NOT be used in production trading systems without extensive testing, risk management, and regulatory compliance.**
-
-Financial markets are complex and regulated. This implementation omits critical production features like:
-- Pre-trade risk controls
-- Regulatory reporting (OATS, CAT, MIFID II)
-- Surveillance and compliance monitoring
-- Disaster recovery and high availability
-
-Use at your own risk.
-
----
 
 <div align="center">
 
 **Built with ❤️ using Modern C++20**
-
-[⭐ Star this repo](https://github.com/yourusername/quantummatch) | [📖 Documentation](https://quantummatch.dev) | [💬 Discord Community](https://discord.gg/quantummatch)
 
 </div>
